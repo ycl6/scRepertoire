@@ -148,8 +148,16 @@ loadContigs <- function(input,
 #Formats AIRR data
 .parseAIRR <- function(df) {
     for (i in seq_along(df)) {
-        df[[i]] <- df[[i]][,c("cell_id", "locus", "consensus_count", "v_call", "d_call", "j_call", "c_call", "junction", "junction_aa")]
-        colnames(df[[i]]) <- c("barcode", "chain", "reads", "v_gene", "d_gene", "j_gene", "c_gene", "cdr3_nt", "cdr3")
+        if("locus" %in% colnames(df)) {
+            df[[i]] <- df[[i]][,c("cell_id", "clone_id", "locus", "consensus_count", "v_call", "d_call", "j_call", "c_call", "junction", "junction_aa")]
+            colnames(df[[i]]) <- c("barcode", "clonotype_id", "chain", "reads", "v_gene", "d_gene", "j_gene", "c_gene", "cdr3_nt", "cdr3")
+        } else {
+            # 10X's AIRR lacks locus column
+            df[[i]] <- df[[i]][,c("cell_id", "clone_id", "consensus_count", "v_call", "d_call", "j_call", "c_call", "junction", "junction_aa")]
+            colnames(df[[i]]) <- c("barcode", "clonotype_id", "reads", "v_gene", "d_gene", "j_gene", "c_gene", "cdr3_nt", "cdr3")
+	    chain <- gsub("J.*", "", df[[i]]$j_gene)
+	    df[[i]] <- mutate(df[[i]], chain = chain, .before = "reads")
+	}
         df[[i]] <- df[[i]][with(df[[i]], order(reads, chain)),]
     }
     return(df)

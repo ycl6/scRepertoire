@@ -95,6 +95,13 @@ combineTCR <- function(input.data,
         Con.df[Con.df == "NA_NA" | Con.df == "NA;NA_NA;NA"] <- NA 
         data3 <- merge(data2[,-which(names(data2) %in% c("TCR1","TCR2"))], 
             Con.df, by = "barcode")
+	# Store 'clonotype_id' if found in input (10X/AIRR)
+	clonotype_id <- NA
+	if("raw_clonotype_id" %in% colnames(data3)) {
+            clonotype_id <- data3$raw_clonotype_id
+	} else if("clonotype_id" %in% colnames(data3)) {
+            clonotype_id <- data3$clonotype_id
+	}
         if (!is.null(samples) && !is.null(ID)) {
             data3 <- data3[, c("barcode", "sample", "ID", tcr1_lines, tcr2_lines,
                 CT_lines)] }
@@ -102,7 +109,10 @@ combineTCR <- function(input.data,
           data3<-data3[,c("barcode","sample",tcr1_lines,tcr2_lines,
                           CT_lines)] 
         }
-        final[[i]] <- data3 
+
+	# Add clonotype_id to data.frame
+	data3 <- mutate(data3, clonotype_id = clonotype_id, .before = "TCR1")
+        final[[i]] <- data3
     }
     name_vector <- character(length(samples))
     for (i in seq_along(samples)) { 
