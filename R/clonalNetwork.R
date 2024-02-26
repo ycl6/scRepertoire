@@ -32,8 +32,9 @@
 #' @param filter.clones Use to select the top n clones (e.g., \strong{filter.clones} 
 #' = 2000) or n of clones based on the minimum number of all the comparators 
 #' (e.g., \strong{filter.clone} = "min").
-#' @param filter.identity Display the network for a specific level of the 
-#' indicated identity.
+#' @param filter.identity Display the network for one or more levels of the 
+#' indicated identity - e.g. \code{filter.identity = c(3, 4)} to examine 
+#' cluster 3 and 4.
 #' @param filter.proportion Remove clones from the network below a specific
 #'  proportion.
 #' @param filter.graph Remove the reciprocal edges from the half of the graph,
@@ -191,8 +192,8 @@ clonalNetwork <- function(sc.data,
     colnames(edge.list)[3] <-"weight"
     #Filtering based on identity
     if (!is.null(filter.identity)) { 
-        col1 <- which(edge.list[,1] == filter.identity)
-        col2 <- which(edge.list[,2] == filter.identity)
+        col1 <- which(edge.list[,1] %in% filter.identity)
+        col2 <- which(edge.list[,2] %in% filter.identity)
         edge.list <- edge.list[c(col1,col2),]
     }
     #Remove reciprocals 
@@ -204,7 +205,7 @@ clonalNetwork <- function(sc.data,
     if(!is.null(filter.proportion)) {
         edge.list <-edge.list[edge.list[,3] > filter.proportion,]
     }
-    edge.list1 <- edge.list %>%
+    edge.list1 <- unique(edge.list) %>%
         group_by(to, from) %>%
         summarise(weight = sum(as.numeric(weight)))
     graph <- graph_from_data_frame(edge.list1)
