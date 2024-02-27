@@ -205,9 +205,9 @@ clonalNetwork <- function(sc.data,
     if(!is.null(filter.proportion)) {
         edge.list <-edge.list[edge.list[,3] > filter.proportion,]
     }
-    edge.list1 <- unique(edge.list) %>%
+    edge.list1 <- edge.list %>%
         group_by(to, from) %>%
-        summarise(weight = sum(as.numeric(weight)))
+        summarise(weight = mean(as.numeric(weight)))
     graph <- graph_from_data_frame(edge.list1)
     clone.number <- clone.number[match(names(V(graph)), names(clone.number))]
     V(graph)$size <- unname(clone.number)
